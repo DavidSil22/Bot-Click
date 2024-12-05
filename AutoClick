@@ -1,0 +1,36 @@
+import pyautogui
+import cv2
+import numpy as np
+import time
+
+# Carregar as imagens dos objetos que você quer detectar
+abobora_img = cv2.imread('abobora.png')
+gelo_img = cv2.imread('gelo.png')
+play_img = cv2.imread('play.png')
+
+# Temporizador - ainda mais rápido para não perder imagens
+tempo_espera = 0.01
+
+# Função para encontrar um objeto na tela
+def encontrar_objeto(objeto_img):
+    screenshot = pyautogui.screenshot()
+    screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+    result = cv2.matchTemplate(screenshot, objeto_img, cv2.TM_CCOEFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    return max_loc if max_val > 0.8 else None
+
+def autoclick():
+    while True:
+        for objeto_img in [abobora_img, gelo_img, play_img]:
+            posicao = encontrar_objeto(objeto_img)
+            if posicao:
+                pyautogui.click(posicao[0] + objeto_img.shape[1] // 2, posicao[1] + objeto_img.shape[0] // 2)
+                break  # Para o loop após encontrar e clicar em uma imagem
+        time.sleep(tempo_espera)
+
+print("Iniciando autoclicker...")
+
+try:
+    autoclick()
+except KeyboardInterrupt:
+    print("Autoclicker finalizado.")
